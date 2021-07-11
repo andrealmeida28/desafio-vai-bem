@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -6,10 +7,11 @@ import { EstabelecimentoService } from './estabelecimento.service';
 
 const oneMockEstablishment: Estabelecimento = new Estabelecimento();
 oneMockEstablishment.id_estabelecimento = 1;
-oneMockEstablishment.nome = 'Teste';
-oneMockEstablishment.localizacao = 'Aqui';
+oneMockEstablishment.nome = 'Nome Teste';
+oneMockEstablishment.localizacao = 'Loc Teste';
+oneMockEstablishment.imagem = 'Imagem Teste';
 
-const mockEstablishmentLocalization = 'Aqui';
+const mockEstablishmentLocalization = 'Loc Teste';
 const mockEstablishmentId = 1;
 
 const mockEstablishmentArray: Estabelecimento[] = [];
@@ -28,9 +30,9 @@ describe('EstabelecimentoService', () => {
           useValue: {
             find: jest.fn().mockResolvedValue(mockEstablishmentArray),
             findOne: jest.fn().mockResolvedValue(oneMockEstablishment),
-            insert: jest.fn().mockReturnValue(oneMockEstablishment),
-            update: jest.fn().mockResolvedValue(true),
-            delete: jest.fn().mockResolvedValue(true),
+            insert: jest.fn().mockResolvedValue(oneMockEstablishment),
+            update: jest.fn().mockResolvedValue(oneMockEstablishment),
+            delete: jest.fn().mockResolvedValue(1),
           },
         },
       ],
@@ -43,6 +45,15 @@ describe('EstabelecimentoService', () => {
 
   afterAll((done) => {
     done();
+  });
+
+  describe('createEstablishment', () => {
+    it('should create a establishment', async () => {
+      expect(repository.insert).not.toHaveBeenCalled();
+      const result = await service.create(oneMockEstablishment);
+      expect(repository.insert).toHaveBeenCalledWith(oneMockEstablishment);
+      expect(result).toEqual(oneMockEstablishment);
+    });
   });
 
   describe('findAll', () => {
@@ -67,6 +78,23 @@ describe('EstabelecimentoService', () => {
       const establishments: Estabelecimento[] =
         await service.findByLocalization(mockEstablishmentLocalization);
       expect(establishments).toEqual(mockEstablishmentArray);
+    });
+  });
+
+  describe('editEstablishment', () => {
+    it('should edit a establishment', async () => {
+      expect(repository.update).not.toHaveBeenCalled();
+      const result = await service.update(1, oneMockEstablishment);
+      expect(repository.update).toHaveBeenCalledWith(oneMockEstablishment);
+      expect(result).toEqual(oneMockEstablishment);
+    });
+  });
+
+  describe('deleteEstablishment', () => {
+    it.skip('should delete establishment', async () => {
+      expect(repository.delete).not.toHaveBeenCalled();
+      await service.remove(1);
+      expect(repository.delete).toHaveBeenCalledWith(1);
     });
   });
 });
